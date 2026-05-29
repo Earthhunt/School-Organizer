@@ -1,10 +1,27 @@
-//
-//  Exam.swift
-//  School Organizer
-//
-
 import Foundation
 import SwiftData
+
+enum ExamStatus: String, Codable, CaseIterable {
+    case notStarted = "Nicht gestartet"
+    case learning = "Lerne gerade"
+    case ready = "Bereit!"
+    
+    var icon: String {
+        switch self {
+        case .notStarted: return "circle"
+        case .learning: return "pencil.and.outline"
+        case .ready: return "checkmark.circle.fill"
+        }
+    }
+    
+    var colorName: String {
+        switch self {
+        case .notStarted: return "gray"
+        case .learning: return "orange"
+        case .ready: return "green"
+        }
+    }
+}
 
 @Model
 class Exam {
@@ -14,9 +31,15 @@ class Exam {
     var date: Date
     var notes: String
     var createdAt: Date
-
     var term: Term?
-
+    
+    var status: ExamStatus = ExamStatus.notStarted
+    var grade: Double?
+    var weight: Double = 10.0
+    
+    @Relationship(deleteRule: .cascade)
+    var attachments: [Attachment]? = []
+    
     init(subject: String,
          colorHex: String = "#4F8EF7",
          topic: String = "",
@@ -38,14 +61,14 @@ extension Exam {
     var isPast: Bool {
         date < Calendar.current.startOfDay(for: .now)
     }
-
+    
     var daysUntil: Int {
         let cal = Calendar.current
         let today = cal.startOfDay(for: .now)
         let examDay = cal.startOfDay(for: date)
         return cal.dateComponents([.day], from: today, to: examDay).day ?? 0
     }
-
+    
     var countdownText: String {
         let d = daysUntil
         switch d {
